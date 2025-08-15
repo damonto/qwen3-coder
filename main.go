@@ -104,7 +104,7 @@ func forwardRequest(w http.ResponseWriter, r *http.Request, target string, token
 
 	copyHeaders(request.Header, r.Header)
 
-	request.Header.Set("User-Agent", "GeminiCLI/0.1.21 (darwin; x64)")
+	request.Header.Set("User-Agent", "GeminiCLI/0.1.21 (linux; amd64)")
 	if token != nil && token.AccessToken != "" {
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
 	}
