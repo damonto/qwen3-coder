@@ -22,7 +22,7 @@ var (
 type Model struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
-	OwnerBy string `json:"owner_by"`
+	OwnedBy string `json:"owned_by"`
 	Created int64  `json:"created"`
 	Object  string `json:"object"`
 }
@@ -51,8 +51,8 @@ func main() {
 	http.HandleFunc("/v1/models", withAuth(func(w http.ResponseWriter, r *http.Request) {
 		response := ModelResponse{
 			Data: []Model{
-				{ID: "qwen3-coder-plus", Name: "Qwen3-Coder", OwnerBy: "qwen", Created: 1732711466, Object: "model"},
-				{ID: "qwen3-coder-flash", Name: "Qwen3-Coder-Flash", OwnerBy: "qwen", Created: 1732711466, Object: "model"},
+				{ID: "qwen3-coder-plus", Name: "Qwen3-Coder", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
+				{ID: "qwen3-coder-flash", Name: "Qwen3-Coder-Flash", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
 			},
 			Object: "list",
 		}
