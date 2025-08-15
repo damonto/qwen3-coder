@@ -135,7 +135,7 @@ func (dt *DeviceToken) IsValid() bool {
 	if dt.AccessToken == "" {
 		return false
 	}
-	return dt.ExpiresAt.After(time.Now().Add(-300 * time.Second))
+	return time.Until(dt.ExpiresAt) > 300*time.Second
 }
 
 func (dt *DeviceToken) GetResourceURL() *url.URL {
