@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: [v*]
+    paths-ignore:
+      - "**/*.md"
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build for ${{ matrix.target.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { arch: 386, name: linux-i386 }
+          - { arch: amd64, name: linux-amd64 }
+          - { arch: arm, name: linux-armhf }
+          - { arch: arm64, name: linux-arm64 }
+          - { arch: ppc64le, name: linux-ppc64le }
+          - { arch: s390x, name: linux-s390x }
+          - { arch: riscv64, name: linux-riscv64 }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.25
+
+      - name: Build for ${{ matrix.target.name }}
+        run: |
+          go generate ./...
+          BUILD_VERSION=$(git describe --always --tags --match "v*" --dirty="-dev")
+          CGO_ENABLED=0 GOARCH=${{ matrix.target.arch }} go build -trimpath -ldflags="-w -s -X main.Version=$BUILD_VERSION" -o qwen3-coder-openai-${{ matrix.target.name }}
+
+      - name: Upload ${{ matrix.target.name }} to Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen3-coder-openai-${{ matrix.target.name }}
+          path: qwen3-coder-openai-${{ matrix.target.name }}
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v5
+        with:
+          merge-multiple: true
+          pattern: "*"
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*"
