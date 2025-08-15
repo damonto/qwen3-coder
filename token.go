@@ -158,10 +158,7 @@ func (dt *DeviceToken) Refresh() error {
 }
 
 func (dt *DeviceToken) Authorize() error {
-	codeVerifier, err := generateCodeVerifier()
-	if err != nil {
-		return err
-	}
+	codeVerifier := mustGenerateCodeVerifier()
 	var response DeviceAuthorizationResponse
 	if err := dt.sendRequest(OAuthDeviceAuthDeviceCodeEndpoint, url.Values{
 		"client_id":             {OAuthClientID},
@@ -258,13 +255,13 @@ func mustGenerateUUID() string {
 		uuid[10:])
 }
 
-func generateCodeVerifier() (string, error) {
+func mustGenerateCodeVerifier() string {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
-	return base64.RawURLEncoding.EncodeToString(b), nil
+	return base64.RawURLEncoding.EncodeToString(b)
 }
 
 func generateCodeChallenge(codeVerifier string) string {

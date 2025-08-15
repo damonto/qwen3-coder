@@ -24,13 +24,17 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - { arch: 386, name: linux-i386 }
-          - { arch: amd64, name: linux-amd64 }
-          - { arch: arm, name: linux-armhf }
-          - { arch: arm64, name: linux-arm64 }
-          - { arch: ppc64le, name: linux-ppc64le }
-          - { arch: s390x, name: linux-s390x }
-          - { arch: riscv64, name: linux-riscv64 }
+          - { os: linux, arch: 386, name: linux-i386 }
+          - { os: linux, arch: amd64, name: linux-amd64 }
+          - { os: linux, arch: arm, name: linux-armhf }
+          - { os: linux, arch: arm64, name: linux-arm64 }
+          - { os: linux, arch: ppc64le, name: linux-ppc64le }
+          - { os: linux, arch: s390x, name: linux-s390x }
+          - { os: linux, arch: riscv64, name: linux-riscv64 }
+          - { os: darwin, arch: amd64, name: darwin-amd64 }
+          - { os: darwin, arch: arm64, name: darwin-arm64 }
+          - { os: windows, arch: amd64, name: windows-amd64 }
+          - { os: windows, arch: arm64, name: windows-arm64 }
 
     steps:
       - name: Checkout code
@@ -47,7 +51,7 @@ jobs:
         run: |
           go generate ./...
           BUILD_VERSION=$(git describe --always --tags --match "v*" --dirty="-dev")
-          CGO_ENABLED=0 GOARCH=${{ matrix.target.arch }} go build -trimpath -ldflags="-w -s -X main.Version=$BUILD_VERSION" -o qwen3-coder-openai-${{ matrix.target.name }}
+          CGO_ENABLED=0 GOOS=${{ matrix.target.os }} GOARCH=${{ matrix.target.arch }} go build -trimpath -ldflags="-w -s -X main.Version=$BUILD_VERSION" -o qwen3-coder-openai-${{ matrix.target.name }}
 
       - name: Upload ${{ matrix.target.name }} to Artifact
         uses: actions/upload-artifact@v4

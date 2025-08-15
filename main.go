@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var (
@@ -17,6 +16,7 @@ var (
 	tokenPath     string
 	listenAddress string
 	tm            *TokenManager
+	Version       string
 )
 
 type Model struct {
@@ -35,7 +35,7 @@ type ModelResponse struct {
 func init() {
 	flag.StringVar(&listenAddress, "listen", ":9527", "listen address")
 	flag.StringVar(&token, "token", "", "The token (API key) for authentication")
-	flag.StringVar(&tokenPath, "token-path", "./token.json", "The path where the token is stored")
+	flag.StringVar(&tokenPath, "token-path", "./data/token.json", "The path where the token is stored")
 	flag.Parse()
 }
 
@@ -45,14 +45,14 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info("starting server", "listenAddress", listenAddress)
+	slog.Info("starting server", "listenAddress", listenAddress, "version", Version)
 
 	http.HandleFunc("/v1/", withAuth(forward))
 	http.HandleFunc("/v1/models", withAuth(func(w http.ResponseWriter, r *http.Request) {
 		response := ModelResponse{
 			Data: []Model{
 				{ID: "qwen3-coder-plus", Name: "Qwen3-Coder", OwnerBy: "qwen", Created: 1732711466, Object: "model"},
-				{ID: "qwen3-coder-flash", Name: "Qwen3-Coder Flash", OwnerBy: "qwen", Created: 1732711466, Object: "model"},
+				{ID: "qwen3-coder-flash", Name: "Qwen3-Coder-Flash", OwnerBy: "qwen", Created: 1732711466, Object: "model"},
 			},
 			Object: "list",
 		}
@@ -102,32 +102,62 @@ func forwardRequest(w http.ResponseWriter, r *http.Request, target string, token
 		return err
 	}
 
-	for name, values := range r.Header {
-		for _, v := range values {
-			request.Header.Add(name, v)
-		}
-	}
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
+	copyHeaders(request.Header, r.Header)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	if token != nil && token.AccessToken != "" {
+		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
+	}
+
+	client := &http.Client{
+		Timeout:   0,
+		Transport: http.DefaultTransport,
+	}
+
 	response, err := client.Do(request)
 	if err != nil {
+		http.Error(w, "Service unavailable", http.StatusServiceUnavailable)
 		return err
 	}
 	defer response.Body.Close()
-	if response.StatusCode == http.StatusUnauthorized {
-		return ErrUnauthorized
-	}
 
-	for name, values := range response.Header {
-		for _, v := range values {
-			w.Header().Set(name, v)
-		}
-	}
+	copyHeaders(w.Header(), response.Header)
 	w.WriteHeader(response.StatusCode)
 
-	_, copyErr := io.Copy(w, response.Body)
-	return copyErr
+	if strings.Contains(response.Header.Get("Content-Type"), "text/event-stream") {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+			return fmt.Errorf("ResponseWriter does not support flushing")
+		}
+		buf := make([]byte, 4096)
+		for {
+			n, err := response.Body.Read(buf)
+			if n > 0 {
+				if _, writeErr := w.Write(buf[:n]); writeErr != nil {
+					return writeErr
+				}
+				flusher.Flush()
+			}
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		_, err := io.Copy(w, response.Body)
+		return err
+	}
+	return nil
+}
+
+func copyHeaders(dst, src http.Header) {
+	for k, vv := range src {
+		for _, v := range vv {
+			dst.Add(k, v)
+		}
+	}
 }
 
 func withAuth(next http.HandlerFunc) http.HandlerFunc {
