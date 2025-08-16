@@ -55,6 +55,60 @@ nohup ./qwen3-coder -token "your-api-key" > qwen3-coder.log 2>&1 &
 ./qwen3-coder -listen ":8080" -token "your-api-key"
 ```
 
+### Docker Usage
+
+You can also run qwen3-coder using Docker:
+
+#### Using Docker Compose
+
+1. Create a `.env` file in the same directory as your `compose.yaml`:
+
+```bash
+echo "APP_TOKEN=your-api-key" > .env
+```
+
+2. Start the service:
+
+```bash
+docker-compose up -d
+```
+
+3. View the logs to get the authorization URL for authentication:
+
+```bash
+docker-compose logs -f qwen3-coder
+```
+
+After starting the container, check the logs to find the `Authorization URL` and complete the OAuth2 authentication process.
+
+#### Using Docker Directly
+
+```bash
+docker run -d \
+  --name qwen3-coder \
+  -p 9527:9527 \
+  -e APP_TOKEN="your-api-key" \
+  -v qwen3-coder-data:/data \
+  --restart unless-stopped \
+  damonto/qwen3-coder
+```
+
+Then view the logs to get the authorization URL:
+
+```bash
+docker logs -f qwen3-coder
+```
+
+#### Docker Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `APP_TOKEN` | API key for authentication | Yes |
+
+#### Important Note for Docker Users
+
+After starting the Docker container, you **must** view the container logs to get the `Authorization URL` and complete the OAuth2 authentication process. The service will not be fully functional until this authentication step is completed.
+
 ## Configuration
 
 ### Token Storage
