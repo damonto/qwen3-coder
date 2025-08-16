@@ -1,0 +1,14 @@
+services:
+  qwen3-coder:
+    image: damonto/qwen3-coder
+    container_name: qwen3-coder
+    restart: unless-stopped
+    ports:
+      - 9527:9527
+    environment:
+      - APP_TOKEN=${APP_TOKEN}
+    volumes:
+      - data:/data
+
+volumes:
+  data:
