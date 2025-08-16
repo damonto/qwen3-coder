@@ -90,9 +90,10 @@ func forward(w http.ResponseWriter, r *http.Request) {
 				respondError(w, http.StatusInternalServerError, err)
 				return
 			}
+		} else {
+			respondError(w, http.StatusInternalServerError, err)
+			return
 		}
-		respondError(w, http.StatusInternalServerError, err)
-		return
 	}
 }
 
