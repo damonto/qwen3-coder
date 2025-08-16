@@ -138,10 +138,6 @@ func (dt *DeviceToken) IsValid() bool {
 	return time.Until(dt.ExpiresAt) > 300*time.Second
 }
 
-func (dt *DeviceToken) GetResourceURL() *url.URL {
-	return &url.URL{Scheme: "https", Host: dt.ResourceURL}
-}
-
 func (dt *DeviceToken) Refresh() error {
 	if dt.AccessToken == "" {
 		return errors.New("no access token available")

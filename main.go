@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -73,7 +74,7 @@ func forward(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, err)
 		return
 	}
-	target := token.GetResourceURL()
+	target := url.URL{Scheme: "https", Host: token.ResourceURL}
 	target.Path = r.URL.Path
 	target.RawQuery = r.URL.RawQuery
 	targetURL := target.String()
