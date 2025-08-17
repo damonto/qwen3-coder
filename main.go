@@ -118,7 +118,6 @@ func forwardRequest(w http.ResponseWriter, r *http.Request, target string, token
 
 	response, err := client.Do(request)
 	if err != nil {
-		http.Error(w, "Service unavailable", http.StatusServiceUnavailable)
 		return err
 	}
 	defer response.Body.Close()
@@ -129,7 +128,6 @@ func forwardRequest(w http.ResponseWriter, r *http.Request, target string, token
 	if strings.Contains(response.Header.Get("Content-Type"), "text/event-stream") {
 		flusher, ok := w.(http.Flusher)
 		if !ok {
-			http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
 			return fmt.Errorf("ResponseWriter does not support flushing")
 		}
 		buf := make([]byte, 4096)
