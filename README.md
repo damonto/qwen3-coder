@@ -1,6 +1,8 @@
 # Qwen3-Coder
 
-Qwen3-Coder is a proxy service that provides an OpenAI-compatible API interface for Qwen AI services. It handles OAuth2 device flow authentication and forwards requests to the Qwen API, making it easy to integrate Qwen AI capabilities into applications that support OpenAI APIs.
+Qwen3-Coder is a proxy service that provides an OpenAI-compatible API interface for Qwen AI services. This project extracts APIs from the [qwen-code](https://github.com/QwenLM/qwen-code) project and implements a forwarding service, allowing you to provide the API to other AI tools such as Cline, RooCode, Kilo Code, and more.
+
+The project uses Qwen OAuth, which enables you to utilize the free quota of 2,000 requests per day with no token limits and a rate limit of 60 requests per minute.
 
 ## Features
 
@@ -10,6 +12,26 @@ Qwen3-Coder is a proxy service that provides an OpenAI-compatible API interface 
 - Request forwarding with proper authorization headers
 - Built-in model listing endpoint
 - Cross-platform support (Linux, macOS, Windows)
+- Compatible with popular AI tools like Cline, RooCode, Kilo Code
+- Utilizes Qwen OAuth for free quota access (2,000 requests/day)
+
+## Qwen API Usage
+This project uses Qwen OAuth to provide access to the Qwen API with the following free quotas:
+- 2,000 requests per day with no token limits
+- 60 requests per minute rate limit
+
+This makes it possible to use Qwen's powerful coding models in your favorite AI tools without needing to purchase additional API credits.
+
+## Compatible AI Tools
+This proxy service allows you to use Qwen's API with various AI tools that support OpenAI-compatible APIs, including:
+- Cline
+- RooCode
+- Kilo Code
+- Cursor
+- Continue.dev
+- And many other tools that support OpenAI API format
+
+Simply configure your AI tool to use this service as an OpenAI-compatible endpoint, and you'll be able to leverage Qwen's powerful coding models.
 
 ## Installation
 
