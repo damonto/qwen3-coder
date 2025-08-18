@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -12,11 +12,7 @@ type HTTPErrorResponse struct {
 }
 
 func (e HTTPErrorResponse) Error() string {
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(e); err != nil {
-		return err.Error()
-	}
-	return buf.String()
+	return e.Err.Error()
 }
 
 type Error struct {
@@ -37,11 +33,20 @@ var (
 )
 
 func respondError(w http.ResponseWriter, statusCode int, err error) {
-	if _, ok := err.(HTTPErrorResponse); !ok {
-		err = HTTPErrorResponse{Err: Error{Code: "internal_server_error", Type: "invalid_request_error", Message: err.Error()}}
+	httpErr, ok := err.(HTTPErrorResponse)
+	if !ok {
+		httpErr = HTTPErrorResponse{
+			Err: Error{
+				Code:    "internal_server_error",
+				Type:    "invalid_request_error",
+				Message: err.Error(),
+			},
+		}
 	}
-	// Delete the content-type first
-	w.Header().Del("Content-Type")
+
 	w.Header().Set("Content-Type", "application/json")
-	http.Error(w, err.Error(), statusCode)
+	w.WriteHeader(statusCode)
+	if encodeErr := json.NewEncoder(w).Encode(httpErr); encodeErr != nil {
+		slog.Error("failed to encode error response", "error", encodeErr)
+	}
 }
