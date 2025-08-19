@@ -44,6 +44,10 @@ func respondError(w http.ResponseWriter, statusCode int, err error) {
 		}
 	}
 
+	if statusCode == http.StatusUnauthorized {
+		w.Header().Set("WWW-Authenticate", "Bearer realm=\"Qwen3 Coder\"")
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(httpErr); err != nil {
