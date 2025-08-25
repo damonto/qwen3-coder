@@ -85,15 +85,15 @@ func forward(w http.ResponseWriter, r *http.Request) {
 	if err := forwardRequest(w, r, targetURL, token); err != nil {
 		if errors.Is(err, ErrUnauthorized) {
 			if _, err := tm.Refresh(token); err != nil {
-				respondError(w, http.StatusInternalServerError, err)
+				respondError(w, 0, err)
 				return
 			}
 			if err := forwardRequest(w, r, targetURL, token); err != nil {
-				respondError(w, http.StatusInternalServerError, err)
+				respondError(w, 0, err)
 				return
 			}
 		} else {
-			respondError(w, http.StatusInternalServerError, err)
+			respondError(w, 0, err)
 			return
 		}
 	}

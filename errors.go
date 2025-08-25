@@ -49,7 +49,9 @@ func respondError(w http.ResponseWriter, statusCode int, err error) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
+	if statusCode > 0 {
+		w.WriteHeader(statusCode)
+	}
 	if err := json.NewEncoder(w).Encode(httpErr); err != nil {
 		slog.Error("failed to encode error response", "error", err)
 	}
