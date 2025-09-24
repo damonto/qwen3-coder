@@ -54,7 +54,7 @@ func main() {
 		response := ModelResponse{
 			Data: []Model{
 				{ID: "qwen3-coder-plus", Name: "Qwen3-Coder", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
-				{ID: "qwen3-coder-flash", Name: "Qwen3-Coder-Flash", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
+				{ID: "qwen-vl-max-latest", Name: "Qwen3-VL-Max", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
 			},
 			Object: "list",
 		}
