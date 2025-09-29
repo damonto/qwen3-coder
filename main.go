@@ -47,14 +47,13 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info("starting server", "listenAddress", listenAddress, "version", Version)
+	slog.Info("Starting server", "listenAddress", listenAddress, "version", Version)
 
-	http.HandleFunc("/v1/", withAuth(forward))
 	http.HandleFunc("/v1/models", withAuth(func(w http.ResponseWriter, r *http.Request) {
 		response := ModelResponse{
 			Data: []Model{
-				{ID: "qwen3-coder-plus", Name: "Qwen3-Coder", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
-				{ID: "qwen-vl-max-latest", Name: "Qwen3-VL-Max", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
+				{ID: "coder-model", Name: "Qwen3-Coder-Plus", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
+				{ID: "vision-model", Name: "Qwen3-VL-Max", OwnedBy: "qwen", Created: 1732711466, Object: "model"},
 			},
 			Object: "list",
 		}
@@ -64,6 +63,8 @@ func main() {
 			return
 		}
 	}))
+	http.HandleFunc("/v1/chat/completions", withAuth(rerouteImage(forward)))
+
 	if err := http.ListenAndServe(listenAddress, nil); err != nil {
 		panic(err)
 	}
@@ -80,7 +81,7 @@ func forward(w http.ResponseWriter, r *http.Request) {
 	target.RawQuery = r.URL.RawQuery
 	targetURL := target.String()
 
-	slog.Info("forwarding request", "targetURL", targetURL)
+	slog.Info("Forwarding request", "targetURL", targetURL)
 
 	if err := forwardRequest(w, r, targetURL, token); err != nil {
 		if errors.Is(err, ErrUnauthorized) {
@@ -166,10 +167,10 @@ func forwardStreamingResponse(w http.ResponseWriter, response *http.Response) er
 		line := scanner.Text()
 		// Qwen3 Coder will send duplicate lines at the beginning of the response.
 		if lineTracker.IsDuplicate(line) {
-			slog.Debug("skipping duplicate line", "line", line)
+			slog.Debug("Skipping duplicate line", "line", line)
 			continue
 		}
-		slog.Debug("received line", "line", line)
+		slog.Debug("Received line", "line", line)
 		if _, err := w.Write(append(scanner.Bytes(), '\n')); err != nil {
 			return err
 		}
@@ -183,21 +184,5 @@ func copyHeaders(dst, src http.Header) {
 		for _, v := range vv {
 			dst.Add(k, v)
 		}
-	}
-}
-
-func withAuth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			respondError(w, http.StatusUnauthorized, ErrMissingToken)
-			return
-		}
-		bearerToken := strings.TrimPrefix(authHeader, "Bearer ")
-		if bearerToken != token {
-			respondError(w, http.StatusUnauthorized, ErrInvalidToken)
-			return
-		}
-		next(w, r)
 	}
 }
