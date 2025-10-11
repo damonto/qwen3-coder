@@ -15,12 +15,34 @@ type Request struct {
 }
 
 type Message struct {
-	Role    string    `json:"role"`
-	Content []Content `json:"content"`
+	Role    string          `json:"role"`
+	Content json.RawMessage `json:"content"`
 }
 
 type Content struct {
 	Type string `json:"type"`
+}
+
+func (r *Request) hasImage() (bool, error) {
+	for _, message := range r.Messages {
+		var c any
+		if err := json.Unmarshal(message.Content, &c); err != nil {
+			return false, err
+		}
+		switch c.(type) {
+		case []any:
+			var contents []Content
+			if err := json.Unmarshal(message.Content, &contents); err != nil {
+				return false, err
+			}
+			for _, content := range contents {
+				if content.Type == "image_url" {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, nil
 }
 
 func rerouteImage(next http.HandlerFunc) http.HandlerFunc {
@@ -32,41 +54,28 @@ func rerouteImage(next http.HandlerFunc) http.HandlerFunc {
 		}
 		r.Body.Close()
 
-		var req Request
-		if err := json.Unmarshal(body, &req); err != nil {
-			respondError(w, http.StatusBadRequest, err)
+		var request Request
+		if err := json.Unmarshal(body, &request); err != nil {
+			respondError(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		hasImage := false
-		for _, message := range req.Messages {
-			for _, content := range message.Content {
-				if content.Type == "image_url" {
-					hasImage = true
-					break
-				}
-			}
+		hasImage, err := request.hasImage()
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, err)
+			return
 		}
 
-		if hasImage && req.Model != "vision-model" {
+		if hasImage && request.Model != "vision-model" {
 			slog.Info("The request contains an image, rerouting to vision model", "model", "qwen3-vl-max")
-			var rawRequest map[string]json.RawMessage
-			if err := json.Unmarshal(body, &rawRequest); err != nil {
-				respondError(w, http.StatusBadRequest, err)
-				return
-			}
-			rawRequest["model"] = json.RawMessage(`"vision-model"`)
-
-			newBody, err := json.Marshal(rawRequest)
+			request.Model = "vision-model"
+			body, err = json.Marshal(request)
 			if err != nil {
 				respondError(w, http.StatusInternalServerError, err)
 				return
 			}
-			r.Body = io.NopCloser(bytes.NewReader(newBody))
-		} else {
-			r.Body = io.NopCloser(bytes.NewReader(body))
 		}
-
+		r.Body = io.NopCloser(bytes.NewReader(body))
 		next(w, r)
 	}
 }
