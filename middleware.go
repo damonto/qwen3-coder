@@ -67,7 +67,7 @@ func rerouteImage(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if hasImage && request.Model != "vision-model" {
-			slog.Info("The request contains an image, rerouting to vision model", "model", "qwen3-vl-max")
+			slog.Info("the request contains an image, rerouting to vision model", "model", "qwen3-vl-max")
 			request.Model = "vision-model"
 			body, err = json.Marshal(request)
 			if err != nil {

@@ -47,7 +47,7 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info("Starting server", "listenAddress", listenAddress, "version", Version)
+	slog.Info("starting server", "listenAddress", listenAddress, "version", Version)
 
 	http.HandleFunc("/v1/models", withAuth(func(w http.ResponseWriter, r *http.Request) {
 		response := ModelResponse{
@@ -81,7 +81,7 @@ func forward(w http.ResponseWriter, r *http.Request) {
 	target.RawQuery = r.URL.RawQuery
 	targetURL := target.String()
 
-	slog.Info("Forwarding request", "targetURL", targetURL)
+	slog.Info("forwarding request", "targetURL", targetURL)
 
 	if err := forwardRequest(w, r, targetURL, token); err != nil {
 		if errors.Is(err, ErrUnauthorized) {
@@ -167,10 +167,10 @@ func forwardStreamingResponse(w http.ResponseWriter, response *http.Response) er
 		line := scanner.Text()
 		// Qwen3 Coder will send duplicate lines at the beginning of the response.
 		if lineTracker.IsDuplicate(line) {
-			slog.Debug("Skipping duplicate line", "line", line)
+			slog.Debug("skipping duplicate line", "line", line)
 			continue
 		}
-		slog.Debug("Received line", "line", line)
+		slog.Debug("received line", "line", line)
 		if _, err := w.Write(append(scanner.Bytes(), '\n')); err != nil {
 			return err
 		}
