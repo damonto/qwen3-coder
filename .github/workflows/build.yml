@@ -54,7 +54,7 @@ jobs:
           CGO_ENABLED=0 GOOS=${{ matrix.target.os }} GOARCH=${{ matrix.target.arch }} go build -trimpath -ldflags="-w -s -X main.Version=$BUILD_VERSION" -o qwen3-coder-openai-${{ matrix.target.name }}
 
       - name: Upload ${{ matrix.target.name }} to Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: qwen3-coder-openai-${{ matrix.target.name }}
           path: qwen3-coder-openai-${{ matrix.target.name }}
