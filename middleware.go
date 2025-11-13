@@ -84,12 +84,12 @@ func withAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			respondError(w, http.StatusUnauthorized, ErrMissingToken)
+			respondError(w, http.StatusUnauthorized, ErrMissingAPIKey)
 			return
 		}
 		bearerToken := strings.TrimPrefix(authHeader, "Bearer ")
-		if bearerToken != token {
-			respondError(w, http.StatusUnauthorized, ErrInvalidToken)
+		if bearerToken != apiKey {
+			respondError(w, http.StatusUnauthorized, ErrInvalidAPIKey)
 			return
 		}
 		next(w, r)

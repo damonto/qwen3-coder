@@ -6,7 +6,7 @@ services:
     ports:
       - 9527:9527
     environment:
-      - APP_TOKEN=${APP_TOKEN}
+      - APP_KEY=${APP_KEY}
     volumes:
       - data:/data
 

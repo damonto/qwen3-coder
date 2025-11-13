@@ -1,2 +1,2 @@
 #!/bin/sh
-exec /app/qwen3-coder -token "$APP_TOKEN" -token-path=/data/token.json
+exec /app/qwen3-coder --api-key "$APP_KEY" --token-path=/data/token.json

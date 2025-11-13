@@ -16,14 +16,18 @@ The project uses Qwen OAuth, which enables you to utilize the free quota of 2,00
 - Utilizes Qwen OAuth for free quota access (2,000 requests/day)
 
 ## Qwen API Usage
+
 This project uses Qwen OAuth to provide access to the Qwen API with the following free quotas:
+
 - 2,000 requests per day with no token limits
 - 60 requests per minute rate limit
 
 This makes it possible to use Qwen's powerful coding models in your favorite AI tools without needing to purchase additional API credits.
 
 ## Compatible AI Tools
+
 This proxy service allows you to use Qwen's API with various AI tools that support OpenAI-compatible APIs, including:
+
 - Cline
 - RooCode
 - Kilo Code
@@ -54,16 +58,16 @@ go build -o qwen3-coder
 ### Basic Usage
 
 ```bash
-./qwen3-coder -token "your-api-key"
+./qwen3-coder -api-key "your-api-key"
 ```
 
 ### Command Line Options
 
-| Option | Description | Default Value |
-|--------|-------------|---------------|
-| `-listen` | Listen address | `:9527` |
-| `-token` | API key for authentication | (required) |
-| `-token-path` | Path to store token information | `./data/token.json` |
+| Option         | Description                     | Default Value       |
+| -------------- | ------------------------------- | ------------------- |
+| `--listen`     | Listen address                  | `:9527`             |
+| `--api-key`    | API key for authentication      | (required)          |
+| `--token-path` | Path to store token information | `./data/token.json` |
 
 ### Running as a Service
 
@@ -71,10 +75,10 @@ You can run qwen3-coder as a background service:
 
 ```bash
 # Run in background
-nohup ./qwen3-coder -token "your-api-key" > qwen3-coder.log 2>&1 &
+nohup ./qwen3-coder --api-key "your-api-key" > qwen3-coder.log 2>&1 &
 
 # Or with a specific listen address
-./qwen3-coder -listen ":8080" -token "your-api-key"
+./qwen3-coder --listen ":8080" --api-key "your-api-key"
 ```
 
 ### Docker Usage
@@ -86,7 +90,7 @@ You can also run qwen3-coder using Docker:
 1. Create a `.env` file in the same directory as your `compose.yaml`:
 
 ```bash
-echo "APP_TOKEN=your-api-key" > .env
+echo "APP_KEY=your-api-key" > .env
 ```
 
 2. Start the service:
@@ -109,7 +113,7 @@ After starting the container, check the logs to find the `Authorization URL` and
 docker run -d \
   --name qwen3-coder \
   -p 9527:9527 \
-  -e APP_TOKEN="your-api-key" \
+  -e APP_KEY="your-api-key" \
   -v qwen3-coder-data:/data \
   --restart unless-stopped \
   damonto/qwen3-coder
@@ -123,9 +127,9 @@ docker logs -f qwen3-coder
 
 #### Docker Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `APP_TOKEN` | API key for authentication | Yes |
+| Variable  | Description                    | Required |
+| --------- | ------------------------------ | -------- |
+| `APP_KEY` | API key for the --api-key flag | Yes      |
 
 #### Important Note for Docker Users
 

@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	token         string
+	apiKey        string
 	tokenPath     string
 	listenAddress string
 	tm            *TokenManager
@@ -36,7 +36,7 @@ type ModelResponse struct {
 
 func init() {
 	flag.StringVar(&listenAddress, "listen", ":9527", "listen address")
-	flag.StringVar(&token, "token", "", "The token (API key) for authentication")
+	flag.StringVar(&apiKey, "api-key", "", "The API key for authentication")
 	flag.StringVar(&tokenPath, "token-path", "./data/token.json", "The path where the token is stored")
 	flag.Parse()
 }

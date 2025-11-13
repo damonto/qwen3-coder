@@ -28,8 +28,8 @@ func (e Error) Error() string {
 var (
 	ErrUnauthorized   = HTTPErrorResponse{Err: Error{Code: "unauthorized", Type: "invalid_request_error", Message: "unauthorized"}}
 	ErrInternalServer = HTTPErrorResponse{Err: Error{Code: "internal_server_error", Type: "invalid_request_error", Message: "internal server error"}}
-	ErrMissingToken   = HTTPErrorResponse{Err: Error{Code: "missing_api_key", Type: "invalid_request_error", Message: "missing access token"}}
-	ErrInvalidToken   = HTTPErrorResponse{Err: Error{Code: "invalid_api_key", Type: "invalid_request_error", Message: "invalid access token or token expired"}}
+	ErrMissingAPIKey  = HTTPErrorResponse{Err: Error{Code: "missing_api_key", Type: "invalid_request_error", Message: "missing access token"}}
+	ErrInvalidAPIKey  = HTTPErrorResponse{Err: Error{Code: "invalid_api_key", Type: "invalid_request_error", Message: "invalid access token or token expired"}}
 )
 
 func respondError(w http.ResponseWriter, statusCode int, err error) {
