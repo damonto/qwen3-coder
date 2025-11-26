@@ -38,10 +38,11 @@ func init() {
 	flag.StringVar(&listenAddress, "listen", ":9527", "listen address")
 	flag.StringVar(&apiKey, "api-key", "", "The API key for authentication")
 	flag.StringVar(&tokenPath, "token-path", "./data/token.json", "The path where the token is stored")
-	flag.Parse()
 }
 
 func main() {
+	flag.Parse()
+
 	tm = NewToken(tokenPath)
 	if err := tm.Authorize(); err != nil {
 		panic(err)
