@@ -135,43 +135,16 @@ func forwardRequest(w http.ResponseWriter, r *http.Request, target string, token
 	return err
 }
 
-type LineTracker struct {
-	lastLine string
-}
-
-func NewLineTracker() *LineTracker {
-	return &LineTracker{}
-}
-
-func (lt *LineTracker) IsDuplicate(line string) bool {
-	if line == "" {
-		return false
-	}
-	if line == lt.lastLine {
-		return true
-	}
-	lt.lastLine = line
-	return false
-}
-
 func forwardStreamingResponse(w http.ResponseWriter, response *http.Response) error {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		return fmt.Errorf("ResponseWriter does not support flushing")
 	}
-	lineTracker := NewLineTracker()
 	scanner := bufio.NewScanner(response.Body)
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
-
 	for scanner.Scan() {
-		line := scanner.Text()
-		// Qwen3 Coder will send duplicate lines at the beginning of the response.
-		if lineTracker.IsDuplicate(line) {
-			slog.Debug("skipping duplicate line", "line", line)
-			continue
-		}
-		slog.Debug("received line", "line", line)
+		slog.Debug("received", "text", scanner.Text())
 		if _, err := w.Write(append(scanner.Bytes(), '\n')); err != nil {
 			return err
 		}
